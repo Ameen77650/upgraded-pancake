@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محلل الصور الذكي - Google AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0a0a0a;
+            --secondary: #111111;
+            --accent: #1a1a1a;
+            --highlight: #00ff41;
+            --text: #00ff41;
+            --text-secondary: #00cc33;
+            --success: #00ff41;
+            --warning: #ffff00;
+            --error: #ff0033;
+            --matrix: #008f11;
+            --gold: #FFD700;
+            --silver: #C0C0C0;
+            --bronze: #CD7F32;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        body {
+            background-color: var(--primary);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        #matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.1;
+        }
+
+        .scan-line {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to bottom, transparent, var(--highlight), transparent);
+            animation: scan 3s linear infinite;
+            z-index: 100;
+            opacity: 0.7;
+        }
+
+        @keyframes scan {
+            0% { top: 0%; }
+            100% { top: 100%; }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background-color: rgba(17, 17, 17, 0.8);
+            padding: 15px 0;
+            border-bottom: 1px solid var(--matrix);
+            position: relative;
+            backdrop-filter: blur(5px);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(90deg, var(--highlight), #33ff66);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+        }
+
+        .logo-icon {
+            color: var(--highlight);
+            font-size: 28px;
+            filter: drop-shadow(0 0 5px var(--highlight));
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: 1px solid var(--matrix);
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: var(--text);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 65, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background-color: rgba(0, 255, 65, 0.1);
+            border-color: var(--highlight);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-color: var(--highlight);
+        }
+
+        .main-content {
+            padding: 30px 0;
+            min-height: calc(100vh - 120px);
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .welcome-section {
+            text-align: center;
+            padding: 40px 0;
+            position: relative;
+        }
+
+        .welcome-section h2 {
+            font-size: 2.2rem;
+            margin-bottom: 15px;
+            color: var(--highlight);
+            text-shadow: 0 0 10px var(--highlight);
+            animation: textGlow 2s infinite alternate;
+        }
+
+        @keyframes textGlow {
+            from { text-shadow: 0 0 10px var(--highlight); }
+            to { text-shadow: 0 0 20px var(--highlight), 0 0 30px var(--highlight); }
+        }
+
+        .welcome-section p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 30px;
+        }
+
+        .upload-section {
+            background-color: rgba(17, 17, 17, 0.7);
+            padding: 30px;
+            border-radius: 8px;
+            margin-top: 30px;
+            text-align: center;
+            border: 1px solid var(--matrix);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(0, 255, 65, 0.05), transparent);
+            z-index: 0;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--matrix);
+            border-radius: 8px;
+            padding: 40px 20px;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            z-index: 1;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .upload-area.has-image {
+            padding: 20px;
+            border-style: solid;
+            min-height: auto;
+        }
+
+        .upload-area.has-image .upload-content {
+            display: none;
+        }
+
+        .upload-area:hover {
+            border-color: var(--highlight);
+            background-color: rgba(0, 255, 65, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 50px;
+            color: var(--highlight);
+            margin-bottom: 15px;
+            filter: drop-shadow(0 0 5px var(--highlight));
+        }
+
+        .upload-area p {
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+        }
+
+        .uploaded-image {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            border: 1px solid var(--matrix);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .analysis-animation {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .binary-code {
+            font-family: monospace;
+            color: var(--highlight);
+            font-size: 1.2rem;
+            margin: 10px 0;
+            text-shadow: 0 0 5px var(--highlight);
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 255, 65, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid var(--highlight);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+            filter: drop-shadow(0 0 5px var(--highlight));
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+           100% { transform: rotate(360deg); }
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .result-section {
+            background-color: rgba(17, 17, 17, 0.7);
+            padding: 30px;
+            border-radius: 8px;
+            margin-top: 30px;
+            text-align: center;
+            display: none;
+            border: 1px solid var(--matrix);
+            animation: fadeIn 0.5s;
+        }
+
+        .result-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 10px currentColor);
+        }
+
+        .analysis-details {
+            text-align: right;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            border: 1px solid var(--matrix);
+        }
+
+        .detail-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0, 255, 65, 0.2);
+        }
+
+        .detail-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .detail-title {
+            font-weight: bold;
+            color: var(--highlight);
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            color: var(--text-secondary);
+        }
+
+        .category-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin: 5px;
+            background-color: rgba(0, 255, 65, 0.1);
+            border: 1px solid var(--matrix);
+        }
+
+        .category-nature {
+            background-color: rgba(0, 100, 255, 0.2);
+            color: #0064ff;
+        }
+
+        .category-people {
+            background-color: rgba(255, 100, 0, 0.2);
+            color: #ff6400;
+        }
+
+        .category-objects {
+            background-color: rgba(200, 0, 255, 0.2);
+            color: #c800ff;
+        }
+
+        .category-other {
+            background-color: rgba(150, 150, 150, 0.2);
+            color: #969696;
+        }
+
+        .confidence-meter {
+            width: 100%;
+            height: 20px;
+            background-color: var(--accent);
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+            border: 1px solid var(--matrix);
+        }
+
+        .confidence-level {
+            height: 100%;
+            background: linear-gradient(90deg, var(--error), var(--warning), var(--success));
+            border-radius: 10px;
+            transition: width 1s ease-in-out;
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+        }
+
+        .api-status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .status-connected {
+            background-color: rgba(0, 255, 65, 0.2);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .status-error {
+            background-color: rgba(255, 0, 51, 0.2);
+            color: var(--error);
+            border: 1px solid var(--error);
+        }
+
+        footer {
+            background-color: rgba(17, 17, 17, 0.8);
+            padding: 20px 0;
+            text-align: center;
+            margin-top: 40px;
+            border-top: 1px solid var(--matrix);
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrix-bg"></canvas>
+    <div class="scan-line"></div>
+
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="material-icons logo-icon">psychology</span>
+                    <h1>محلل الصور الذكي - Google AI</h1>
+                </div>
+                <div class="nav-buttons">
+                    <button class="btn btn-primary" id="analyzeBtn">
+                        <span class="material-icons">photo_camera</span>
+                        تحليل الصور
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <div id="analyzePage" class="page active">
+                <div class="welcome-section">
+                    <h2>محلل الصور الذكي مع Google AI</h2>
+                    <p>قم برفع أي صورة وسيقوم ذكاء Google الاصطناعي بتحليل محتواها بدقة عالية</p>
+                    <div class="api-status" id="apiStatus">
+                        جاري الاتصال بخدمة Google AI...
+                    </div>
+                </div>
+
+                <div class="upload-section">
+                    <h3>رفع صورة للتحليل</h3>
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-content">
+                            <span class="material-icons upload-icon">cloud_upload</span>
+                            <p>انقر هنا لرفع صورة أو اسحبها وأفلتها</p>
+                            <button class="btn btn-primary" id="selectImageBtn">اختيار صورة</button>
+                            <input type="file" id="imageInput" accept="image/*" style="display: none;">
+                        </div>
+                    </div>
+
+                    <div class="analysis-animation" id="analysisAnimation">
+                        <div class="binary-code">01100111 01101111 01101111 01100111</div>
+                        <div class="binary-code">01101100 01100101 00100000 01000001</div>
+                        <div class="binary-code">01001001 00100000 01000001 01101110</div>
+                        <div class="binary-code">01100001 01101100 01111001 01111010</div>
+                        <div class="binary-code">01101001 01101110 01100111 00101110</div>
+                        <div class="spinner"></div>
+                        <p id="analysisStatus">جاري تحليل الصورة باستخدام Google AI...</p>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" id="analyzeImageBtn" style="display: none;">
+                            <span class="material-icons">psychology</span>
+                            تحليل الصورة
+                        </button>
+                        <button class="btn btn-secondary" id="resetBtn" style="display: none;">
+                            <span class="material-icons">refresh</span>
+                            صورة جديدة
+                        </button>
+                    </div>
+                </div>
+
+                <div class="result-section" id="resultSection">
+                    <h3>نتيجة التحليل بواسطة Google AI</h3>
+                    <div class="result-icon" id="resultIcon">
+                        <span class="material-icons">image</span>
+                    </div>
+                    <h2 id="resultText">تحليل الصورة</h2>
+                    
+                    <div class="analysis-details">
+                        <div class="detail-item">
+                            <div class="detail-title">التعرف على الكائنات:</div>
+                            <div class="detail-value" id="objectsDetection">-</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-title">التسميات:</div>
+                            <div class="detail-value" id="labelsDetection">-</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-title">النص المكتشف:</div>
+                            <div class="detail-value" id="textDetection">-</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-title">الوجوه المكتشفة:</div>
+                            <div class="detail-value" id="facesDetection">-</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-title">الوصف التفصيلي:</div>
+                            <div class="detail-value" id="detailedDescription">-</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-title">الفئات الرئيسية:</div>
+                            <div id="categoriesList"></div>
+                        </div>
+                    </div>
+
+                    <p id="confidenceText">دقة التحليل: <span id="confidenceValue">87%</span></p>
+                    <div class="confidence-meter">
+                        <div class="confidence-level" id="confidenceLevel" style="width: 87%;"></div>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-secondary" id="newAnalysisBtn">
+                            <span class="material-icons">add</span>
+                            تحليل جديد
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2023 محلل الصور الذكي - مدعوم بـ Google AI Studio. جميع الحقوق محفوظة.</p>
+        </div>
+    </footer>
+
+    <script>
+        // تأثيرات المصفوفة الخلفية
+        const canvas = document.getElementById('matrix-bg');
+        const ctx = canvas.getContext('2d');
+        
+        function initMatrix() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            const chars = "01010101010101010101010101010101";
+            const charArray = chars.split("");
+            const fontSize = 14;
+            const columns = canvas.width / fontSize;
+            const drops = [];
+            
+            for(let i = 0; i < columns; i++) {
+                drops[i] = 1;
+            }
+            
+            function drawMatrix() {
+                ctx.fillStyle = "rgba(0, 10, 0, 0.04)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                ctx.fillStyle = "#00ff41";
+                ctx.font = fontSize + "px monospace";
+                
+                for(let i = 0; i < drops.length; i++) {
+                    const text = charArray[Math.floor(Math.random() * charArray.length)];
+                    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                    
+                    if(drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                    
+                    drops[i]++;
+                }
+            }
+            
+            setInterval(drawMatrix, 35);
+        }
+
+        // مفتاح Google AI API - تم تصحيحه
+        const GOOGLE_AI_API_KEY = "AIzaSyCGpmnnL56JwjgwcjXE_feNSoBcr0ccyp8";
+        const GOOGLE_VISION_API_URL = "https://vision.googleapis.com/v1/images:annotate";
+
+        // عناصر DOM
+        const uploadArea = document.getElementById('uploadArea');
+        const imageInput = document.getElementById('imageInput');
+        const selectImageBtn = document.getElementById('selectImageBtn');
+        const analyzeImageBtn = document.getElementById('analyzeImageBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const newAnalysisBtn = document.getElementById('newAnalysisBtn');
+        const analysisAnimation = document.getElementById('analysisAnimation');
+        const analysisStatus = document.getElementById('analysisStatus');
+        const resultSection = document.getElementById('resultSection');
+        const resultIcon = document.getElementById('resultIcon');
+        const resultText = document.getElementById('resultText');
+        const objectsDetection = document.getElementById('objectsDetection');
+        const labelsDetection = document.getElementById('labelsDetection');
+        const textDetection = document.getElementById('textDetection');
+        const facesDetection = document.getElementById('facesDetection');
+        const detailedDescription = document.getElementById('detailedDescription');
+        const categoriesList = document.getElementById('categoriesList');
+        const confidenceValue = document.getElementById('confidenceValue');
+        const confidenceLevel = document.getElementById('confidenceLevel');
+        const apiStatus = document.getElementById('apiStatus');
+
+        let currentImageFile = null;
+
+        // اختبار الاتصال بـ Google AI API
+        async function testGoogleAIConnection() {
+            try {
+                apiStatus.textContent = "جاري اختبار الاتصال بـ Google AI...";
+                apiStatus.className = "api-status";
+                
+                // اختبار بسيط للاتصال
+                const testResponse = await fetch(`https://vision.googleapis.com/v1/images:annotate?key=${GOOGLE_AI_API_KEY}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        requests: [
+                            {
+                                image: {
+                                    content: "test"
+                                },
+                                features: [
+                                    {
+                                        type: "LABEL_DETECTION",
+                                        maxResults: 1
+                                    }
+                                ]
+                            }
+                        ]
+                    })
+                });
+
+                if (testResponse.ok) {
+                    apiStatus.textContent = "✓ متصل بـ Google AI بنجاح";
+                    apiStatus.className = "api-status status-connected";
+                } else {
+                    throw new Error('فشل الاتصال');
+                }
+            } catch (error) {
+                console.error('Connection test failed:', error);
+                apiStatus.textContent = "✗ خطأ في الاتصال بـ Google AI - استخدام التحليل المحلي";
+                apiStatus.className = "api-status status-error";
+            }
+        }
+
+        // تحويل الصورة إلى Base64
+        function imageToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const base64 = reader.result.split(',')[1];
+                    resolve(base64);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // تحليل الصورة باستخدام Google Vision AI
+        async function analyzeWithGoogleAI(imageBase64) {
+            try {
+                const response = await fetch(`${GOOGLE_VISION_API_URL}?key=${GOOGLE_AI_API_KEY}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        requests: [
+                            {
+                                image: {
+                                    content: imageBase64
+                                },
+                                features: [
+                                    {
+                                        type: "LABEL_DETECTION",
+                                        maxResults: 10
+                                    },
+                                    {
+                                        type: "OBJECT_LOCALIZATION",
+                                        maxResults: 10
+                                    },
+                                    {
+                                        type: "TEXT_DETECTION",
+                                        maxResults: 5
+                                    },
+                                    {
+                                        type: "FACE_DETECTION",
+                                        maxResults: 5
+                                    },
+                                    {
+                                        type: "LANDMARK_DETECTION",
+                                        maxResults: 5
+                                    },
+                                    {
+                                        type: "LOGO_DETECTION",
+                                        maxResults: 5
+                                    }
+                                ]
+                            }
+                        ]
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`خطأ في API: ${response.status}`);
+                }
+
+                const data = await response.json();
+                return data.responses[0];
+            } catch (error) {
+                console.error('Google AI API Error:', error);
+                throw error;
+            }
+        }
+
+        // معالجة نتائج Google AI
+        function processGoogleAIResults(aiResults) {
+            const results = {
+                objects: [],
+                labels: [],
+                text: [],
+                faces: 0,
+                landmarks: [],
+                logos: [],
+                description: ""
+            };
+
+            // معالجة الكائنات
+            if (aiResults.localizedObjectAnnotations) {
+                results.objects = aiResults.localizedObjectAnnotations.map(obj => ({
+                    name: obj.name,
+                    score: (obj.score * 100).toFixed(1)
+                }));
+            }
+
+            // معالجة التسميات
+            if (aiResults.labelAnnotations) {
+                results.labels = aiResults.labelAnnotations.map(label => ({
+                    description: label.description,
+                    score: (label.score * 100).toFixed(1)
+                }));
+            }
+
+            // معالجة النص
+            if (aiResults.textAnnotations && aiResults.textAnnotations.length > 0) {
+                results.text = aiResults.textAnnotations.slice(0, 3).map(text => text.description);
+            }
+
+            // معالجة الوجوه
+            if (aiResults.faceAnnotations) {
+                results.faces = aiResults.faceAnnotations.length;
+            }
+
+            // معالجة المعالم
+            if (aiResults.landmarkAnnotations) {
+                results.landmarks = aiResults.landmarkAnnotations.map(landmark => ({
+                    description: landmark.description,
+                    score: (landmark.score * 100).toFixed(1)
+                }));
+            }
+
+            // معالجة الشعارات
+            if (aiResults.logoAnnotations) {
+                results.logos = aiResults.logoAnnotations.map(logo => ({
+                    description: logo.description,
+                    score: (logo.score * 100).toFixed(1)
+                }));
+            }
+
+            // إنشاء وصف تفصيلي
+            results.description = generateDetailedDescription(results);
+
+            return results;
+        }
+
+        // إنشاء وصف تفصيلي
+        function generateDetailedDescription(results) {
+            let description = "تحليل الصورة يكشف عن: ";
+            const parts = [];
+
+            if (results.objects.length > 0) {
+                parts.push(`${results.objects.length} كائن مختلف`);
+            }
+
+            if (results.labels.length > 0) {
+                const topLabels = results.labels.slice(0, 3).map(l => l.description).join("، ");
+                parts.push(`يتضمن ${topLabels}`);
+            }
+
+            if (results.faces > 0) {
+                parts.push(`${results.faces} وجه ${results.faces > 1 ? 'بشرية' : 'بشري'}`);
+            }
+
+            if (results.text.length > 0) {
+                parts.push("نص مكتوب");
+            }
+
+            if (results.landmarks.length > 0) {
+                parts.push("معالم بارزة");
+            }
+
+            if (results.logos.length > 0) {
+                parts.push("شعارات");
+            }
+
+            if (parts.length === 0) {
+                return "لم يتم التعرف على محتوى محدد في الصورة";
+            }
+
+            return description + parts.join("، ") + ".";
+        }
+
+        // إعداد أحداث الرفع
+        function setupUploadEvents() {
+            imageInput.value = '';
+            
+            uploadArea.addEventListener('click', handleUploadAreaClick);
+            
+            selectImageBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                imageInput.click();
+            });
+            
+            imageInput.addEventListener('change', handleImageUpload);
+            
+            // إضافة دعم السحب والإفلات
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                uploadArea.style.borderColor = 'var(--highlight)';
+                uploadArea.style.backgroundColor = 'rgba(0, 255, 65, 0.1)';
+            });
+            
+            uploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                uploadArea.style.borderColor = 'var(--matrix)';
+                uploadArea.style.backgroundColor = '';
+            });
+            
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadArea.style.borderColor = 'var(--matrix)';
+                uploadArea.style.backgroundColor = '';
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0 && files[0].type.startsWith('image/')) {
+                    handleFileSelection(files[0]);
+                }
+            });
+        }
+
+        // التعامل مع النقر على منطقة الرفع
+        function handleUploadAreaClick() {
+            imageInput.click();
+        }
+
+        // رفع الصورة
+        function handleImageUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                handleFileSelection(file);
+            }
+        }
+
+        // معالجة اختيار الملف
+        function handleFileSelection(file) {
+            currentImageFile = file;
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                uploadArea.innerHTML = `<img src="${event.target.result}" class="uploaded-image" alt="الصورة المرفوعة">`;
+                uploadArea.classList.add('has-image');
+                
+                analyzeImageBtn.style.display = 'inline-flex';
+                resetBtn.style.display = 'inline-flex';
+                resultSection.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // زر التهيئة
+        resetBtn.addEventListener('click', function() {
+            resetUploadArea();
+        });
+
+        // زر تحليل جديد
+        newAnalysisBtn.addEventListener('click', function() {
+            resetUploadArea();
+        });
+
+        function resetUploadArea() {
+            uploadArea.innerHTML = `
+                <div class="upload-content">
+                    <span class="material-icons upload-icon">cloud_upload</span>
+                    <p>انقر هنا لرفع صورة أو اسحبها وأفلتها</p>
+                    <button class="btn btn-primary" id="selectImageBtn">اختيار صورة</button>
+                    <input type="file" id="imageInput" accept="image/*" style="display: none;">
+                </div>
+            `;
+            uploadArea.classList.remove('has-image');
+            
+            setupUploadEvents();
+            
+            analyzeImageBtn.style.display = 'none';
+            resetBtn.style.display = 'none';
+            resultSection.style.display = 'none';
+            currentImageFile = null;
+        }
+
+        // تحليل الصورة باستخدام Google AI
+        analyzeImageBtn.addEventListener('click', analyzeImage);
+
+        async function analyzeImage() {
+            if (!currentImageFile) return;
+            
+            analysisAnimation.style.display = 'block';
+            analyzeImageBtn.style.display = 'none';
+            resetBtn.style.display = 'none';
+            
+            try {
+                analysisStatus.textContent = "جاري تحميل الصورة وتحويلها...";
+                
+                // تحويل الصورة إلى Base64
+                const imageBase64 = await imageToBase64(currentImageFile);
+                
+                analysisStatus.textContent = "جاري التحليل باستخدام Google AI...";
+                
+                // استخدام Google AI للتحليل
+                const aiResults = await analyzeWithGoogleAI(imageBase64);
+                const processedResults = processGoogleAIResults(aiResults);
+                
+                // عرض النتائج
+                displayAIResults(processedResults);
+                
+            } catch (error) {
+                console.error('Error in AI analysis:', error);
+                analysisStatus.textContent = "خطأ في التحليل. جاري استخدام التحليل المحلي...";
+                
+                // استخدام التحليل المحلي كبديل
+                try {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    const localResults = await fallbackLocalAnalysis(currentImageFile);
+                    displayAIResults(localResults);
+                } catch (fallbackError) {
+                    console.error('Error in fallback analysis:', fallbackError);
+                    const defaultResults = {
+                        objects: [{name: "كائنات عامة", score: "65"}],
+                        labels: [{description: "صورة", score: "70"}],
+                        text: [],
+                        faces: 0,
+                        description: "تم تحليل الصورة بشكل أساسي"
+                    };
+                    displayAIResults(defaultResults);
+                }
+            } finally {
+                analysisAnimation.style.display = 'none';
+                resetBtn.style.display = 'inline-flex';
+            }
+        }
+
+        // تحليل محلي بديل محسن
+        async function fallbackLocalAnalysis(imageFile) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    const img = new Image();
+                    const url = URL.createObjectURL(imageFile);
+                    
+                    img.onload = function() {
+                        const analysis = advancedLocalAnalysis(img);
+                        URL.revokeObjectURL(url);
+                        resolve(analysis);
+                    };
+                    
+                    img.src = url;
+                }, 2000);
+            });
+        }
+
+        // تحليل محلي متقدم
+        function advancedLocalAnalysis(img) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+            
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+            
+            // تحليل بسيط للألوان والسطوع
+            let redSum = 0, greenSum = 0, blueSum = 0;
+            let brightPixels = 0, darkPixels = 0;
+            let colorCounts = {};
+            
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+                
+                redSum += r;
+                greenSum += g;
+                blueSum += b;
+                
+                const brightness = (r + g + b) / 3;
+                if (brightness > 200) brightPixels++;
+                if (brightness < 50) darkPixels++;
+                
+                // تحليل الألوان السائدة
+                const colorGroup = getColorGroup(r, g, b);
+                colorCounts[colorGroup] = (colorCounts[colorGroup] || 0) + 1;
+            }
+            
+            const totalPixels = data.length / 4;
+            const avgRed = Math.round(redSum / totalPixels);
+            const avgGreen = Math.round(greenSum / totalPixels);
+            const avgBlue = Math.round(blueSum / totalPixels);
+            
+            // تحديد نوع الصورة بناءً على التحليل
+            let imageType = "صورة ملونة";
+            let dominantColor = getDominantColor(colorCounts);
+            
+            if (darkPixels / totalPixels > 0.7) imageType = "صورة داكنة";
+            if (brightPixels / totalPixels > 0.7) imageType = "صورة مضيئة";
+            if (Math.abs(avgRed - avgGreen) < 10 && Math.abs(avgGreen - avgBlue) < 10) imageType = "صورة متوازنة الألوان";
+            
+            // إنشاء تحليل أكثر تفصيلاً
+            const objects = [
+                {name: imageType, score: "75"},
+                {name: `صورة ${dominantColor}`, score: "70"},
+                {name: "صورة رقمية", score: "80"}
+            ];
+            
+            const labels = [
+                {description: imageType, score: "75"},
+                {description: `صورة ${dominantColor}`, score: "70"},
+                {description: "صورة", score: "85"},
+                {description: "رؤية حاسوبية", score: "70"}
+            ];
+            
+            // إضافة تسميات إضافية بناءً على خصائص الصورة
+            if (brightPixels / totalPixels > 0.6) {
+                labels.push({description: "صورة مشرقة", score: "65"});
+            }
+            if (darkPixels / totalPixels > 0.6) {
+                labels.push({description: "صورة داكنة", score: "65"});
+            }
+            
+            return {
+                objects: objects,
+                labels: labels,
+                text: [],
+                faces: 0,
+                description: `تحليل محلي: ${imageType} ${dominantColor} بأبعاد ${img.width}×${img.height} بكسل`
+            };
+        }
+
+        // تحديد مجموعة اللون
+        function getColorGroup(r, g, b) {
+            if (r > 200 && g > 200 && b > 200) return "أبيض";
+            if (r < 50 && g < 50 && b < 50) return "أسود";
+            if (r > g && r > b) return "أحمر";
+            if (g > r && g > b) return "أخضر";
+            if (b > r && b > g) return "أزرق";
+            if (Math.abs(r - g) < 30 && Math.abs(g - b) < 30) return "رمادي";
+            return "ملون";
+        }
+
+        // تحديد اللون السائد
+        function getDominantColor(colorCounts) {
+            let maxCount = 0;
+            let dominant = "ملونة";
+            
+            for (const color in colorCounts) {
+                if (colorCounts[color] > maxCount) {
+                    maxCount = colorCounts[color];
+                    dominant = color;
+                }
+            }
+            
+            return dominant;
+        }
+
+        // عرض نتائج الذكاء الاصطناعي
+        function displayAIResults(results) {
+            resultSection.style.display = 'block';
+            
+            // عرض الكائنات
+            objectsDetection.textContent = results.objects.map(obj => 
+                `${obj.name} (${obj.score}%)`
+            ).join("، ") || "لم يتم التعرف على كائنات محددة";
+            
+            // عرض التسميات
+            labelsDetection.textContent = results.labels.map(label => 
+                `${label.description} (${label.score}%)`
+            ).join("، ") || "لا توجد تسميات محددة";
+            
+            // عرض النص
+            textDetection.textContent = results.text.join("، ") || "لم يتم العثور على نص";
+            
+            // عرض الوجوه
+            facesDetection.textContent = results.faces > 0 ? 
+                `${results.faces} وجه ${results.faces > 1 ? 'بشرية' : 'بشري'}` : 
+                "لم يتم التعرف على وجوه";
+            
+            // عرض الوصف التفصيلي
+            detailedDescription.textContent = results.description;
+            
+            // حساب الثقة العامة
+            const confidence = calculateOverallConfidence(results);
+            confidenceValue.textContent = `${confidence}%`;
+            confidenceLevel.style.width = `${confidence}%`;
+            
+            // عرض الفئات
+            displayCategories(results);
+            
+            // تحديث الواجهة
+            updateResultUI(results, confidence);
+        }
+
+        // حساب الثقة العامة
+        function calculateOverallConfidence(results) {
+            let totalScore = 0;
+            let count = 0;
+            
+            // متوسط درجات الثقة من النتائج المختلفة
+            if (results.objects.length > 0) {
+                totalScore += results.objects.reduce((sum, obj) => sum + parseFloat(obj.score), 0);
+                count += results.objects.length;
+            }
+            
+            if (results.labels.length > 0) {
+                totalScore += results.labels.reduce((sum, label) => sum + parseFloat(label.score), 0);
+                count += results.labels.length;
+            }
+            
+            if (count === 0) return 65; // قيمة افتراضية
+            
+            const average = totalScore / count;
+            return Math.min(Math.round(average), 95);
+        }
+
+        // عرض الفئات
+        function displayCategories(results) {
+            categoriesList.innerHTML = '';
+            
+            // استخراج الفئات من التسميات
+            const categories = new Set();
+            
+            results.labels.forEach(label => {
+                categories.add(label.description);
+            });
+            
+            results.objects.forEach(obj => {
+                categories.add(obj.name);
+            });
+            
+            // إضافة فئات إضافية بناءً على النتائج
+            if (results.faces > 0) categories.add("أشخاص");
+            if (results.text.length > 0) categories.add("نص");
+            if (results.landmarks.length > 0) categories.add("معالم");
+            if (results.logos.length > 0) categories.add("شعارات");
+            
+            // عرض الفئات
+            Array.from(categories).slice(0, 8).forEach(category => {
+                const categoryClass = getCategoryClass(category);
+                const badge = document.createElement('span');
+                badge.className = `category-badge ${categoryClass}`;
+                badge.textContent = category;
+                categoriesList.appendChild(badge);
+            });
+        }
+
+        // الحصول على فئة التصنيف
+        function getCategoryClass(category) {
+            const categoryMap = {
+                'طبيعة': 'category-nature',
+                'مناظر طبيعية': 'category-nature',
+                'سماء': 'category-nature',
+                'ماء': 'category-nature',
+                'أشخاص': 'category-people',
+                'بورتريه': 'category-people',
+                'وجوه': 'category-people',
+                'مدينة': 'category-objects',
+                'مباني': 'category-objects',
+                'حضرية': 'category-objects',
+                'نص': 'category-other',
+                'شعارات': 'category-other',
+                'معالم': 'category-other'
+            };
+            
+            return categoryMap[category] || 'category-other';
+        }
+
+        // تحديث واجهة النتائج
+        function updateResultUI(results, confidence) {
+            // تحديث الأيقونة
+            let icon = 'image';
+            if (results.faces > 0) icon = 'person';
+            if (results.labels.some(label => label.description.includes('طبيعة'))) icon = 'landscape';
+            if (results.labels.some(label => label.description.includes('مدينة'))) icon = 'location_city';
+            
+            resultIcon.innerHTML = `<span class="material-icons">${icon}</span>`;
+            
+            // تحديث نص النتيجة
+            resultText.textContent = confidence > 80 ? 
+                "تحليل دقيق بواسطة Google AI" : 
+                "تحليل الصورة بواسطة الذكاء الاصطناعي";
+        }
+
+        // تهيئة التطبيق
+        async function initApp() {
+            setupUploadEvents();
+            initMatrix();
+            await testGoogleAIConnection();
+            
+            console.log('التطبيق جاهز للاستخدام مع Google AI!');
+        }
+
+        // بدء التطبيق
+        window.addEventListener('load', initApp);
+    </script>
+</body>
+</html>
